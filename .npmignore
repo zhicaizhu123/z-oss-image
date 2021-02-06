@@ -1,3 +1,8 @@
 /node_modules
 /src
 rollup.config.js
+.prettierrc
+babel.config.js
+.eslintrc.js
+.editorconfig
+

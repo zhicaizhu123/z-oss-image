@@ -1,33 +1,77 @@
-import resolve from "rollup-plugin-node-resolve";
-import babel from "rollup-plugin-babel";
-import { uglify } from "rollup-plugin-uglify";
+const path = require('path');
+const { babel } = require('@rollup/plugin-babel');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const { terser } = require('rollup-plugin-terser');
+const merge = require('lodash.merge');
+const typescript = require('@rollup/plugin-typescript');
+const babelConfig = require('./babel.config');
+const pkg = require('./package.json');
 
-const isProduction = process.env.ENV === "production";
-const isEsm = process.env.METHOD === "esm";
+const extensions = ['.js', '.ts'];
+const moduleName = 'ZOssImage';
 
-let suffix = isProduction ? ".min" : "";
-suffix = isEsm ? ".esm" + suffix : suffix;
-
-const config = {
-  input: "src/index.js",
-  output: {
-    file: `dist/zOssImage${suffix}.js`,
-    format: isEsm ? "es" : "umd",
-    name: "zOssImage",
-    globals: {
-      zOssImage: "zOssImage",
-    },
-  },
-  plugins: [
-    resolve(),
-    babel({
-      exclude: "node_modules/**", // 只编译我们的源代码
-    }),
-  ],
+const resolve = function (...args) {
+  return path.resolve(process.cwd(), ...args);
 };
 
-if (isProduction) {
-  config.plugins.push(uglify());
-}
+// 打包任务的个性化配置
+const jobs = {
+  es: {
+    output: {
+      format: 'es',
+      file: resolve(pkg.main),
+      plugins: [],
+    },
+  },
+  umd: {
+    output: {
+      format: 'umd',
+      file: resolve(pkg.module),
+      name: moduleName,
+      plugins: [],
+    },
+  },
+  min: {
+    output: {
+      format: 'umd',
+      file: resolve(pkg.main.replace(/(.\w+)$/, '.min$1')),
+      name: moduleName,
+    },
+    plugins: [terser()],
+  },
+};
 
-export default config;
+// 从环境变量获取打包特征
+const mergeConfig = jobs[process.env.FORMAT || 'esm'];
+const resolveOptions = {
+  extensions,
+  modulesOnly: !process.env.FORMAT === 'min',
+};
+// const typescriptOptions =
+//   process.env.FORMAT === 'min'
+//     ? {
+//         module: 'commonjs',
+//       }
+//     : {};
+module.exports = merge(
+  {
+    input: resolve('./src/index.ts'),
+    plugins: [
+      typescript({
+        lib: ['es5', 'es6', 'dom'],
+        target: 'es5',
+        // ...typescriptOptions,
+      }),
+      nodeResolve(resolveOptions),
+      commonjs({ extensions }),
+      babel({
+        exclude: 'node_modules/**',
+        extensions,
+        ...babelConfig,
+        plugins: ['transform-class-properties'],
+      }),
+    ],
+  },
+  mergeConfig,
+);

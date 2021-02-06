@@ -26,6 +26,6 @@
 import zOssImg from "zOssImg";
 
 // 原图片链接：https://res.shiguangkey.com/file/ocean/wehub/20200516/09/1589591821138PkDy7a.png
-const url = zOssImg(url).resize({ w: 160, h: 90 }).quality(80).url;
+const url = zOssImg(url).resize({ w: 160, h: 90 }).quality({q :80 }).url;
 // => 处理后的图片链接：https://res.shiguangkey.com/file/ocean/wehub/20200516/09/1589591821138PkDy7a.png?x-oss-process=image%2Fresize%2Cw_160%2Ch_90%2Fquality%2C80
 ```
