@@ -110,6 +110,6 @@ export class OssImage {
  * @param {string} url 需要处理的url
  * @return {OssImage} 处理oss url类的实例
  */
-export default function (url: string): OssImage {
+export default function ossImage(url: string): OssImage {
   return new OssImage(url);
 }

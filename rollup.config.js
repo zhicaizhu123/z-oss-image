@@ -4,7 +4,7 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const { terser } = require('rollup-plugin-terser');
 const merge = require('lodash.merge');
-const typescript = require('@rollup/plugin-typescript');
+const typescript = require('rollup-plugin-typescript2');
 const babelConfig = require('./babel.config');
 const pkg = require('./package.json');
 
@@ -59,9 +59,8 @@ module.exports = merge(
     input: resolve('./src/index.ts'),
     plugins: [
       typescript({
-        lib: ['es5', 'es6', 'dom'],
-        target: 'es5',
-        // ...typescriptOptions,
+        useTsconfigDeclarationDir: true,
+        sourceMap: false
       }),
       nodeResolve(resolveOptions),
       commonjs({ extensions }),
